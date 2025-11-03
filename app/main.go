@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -39,34 +40,19 @@ func echo(commands []string) {
 	}
 }
 
-// func checkPathInSystem(commands []string) bool {
-// 	// Type handler for check program in system
-// 	paths := filepath.SplitList(os.Getenv("PATH"))
-
-// 	command := strings.TrimSpace(commands[1])
-
-// 	for i := len(paths) - 1; i >= 0; i-- {
-// 		dir := paths[i]
-// 		file := filepath.Join(dir, command)
-// 		if _, err := os.Stat(file); err == nil {
-// 			fmt.Fprintf(os.Stdout, "%s is %s\n", command, file)
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }
-
-func findBinInPath(bin string) bool {
+func checkPathInSystem(commands []string) bool {
+	// Type handler for check program in system
 	paths := os.Getenv("PATH")
+
+	command := strings.TrimSpace(commands[1])
+
 	for _, path := range strings.Split(paths, ":") {
-		file := path + "/" + bin
+		file := filepath.Join(path, command)
 		if _, err := os.Stat(file); err == nil {
-			fmt.Fprintln(os.Stdout, bin, "is", file)
+			fmt.Fprintf(os.Stdout, "%s is %s\n", command, file)
 			return true
 		}
 	}
-
 	return false
 }
 
@@ -78,7 +64,7 @@ func checkType(commands []string) {
 		fmt.Fprintln(os.Stdout, fmt.Sprint(command, " is a shell builtin"))
 		return
 	}
-	if !findBinInPath(command) {
+	if !checkPathInSystem(commands) {
 		fmt.Fprintln(os.Stdout, strings.TrimRight(strings.Join(commands[1:], ""), "\n")+": not found")
 	}
 }
