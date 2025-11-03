@@ -7,37 +7,61 @@ import (
 	"strings"
 )
 
-// Ensures gofmt doesn't remove the "fmt" and "os" imports in stage 1 (feel free to remove this!)
-var _ = fmt.Fprint
-var _ = os.Stdout
+var commandHandlers map[string]func([]string)
 
-type CommandHandler func(args []string) (exit bool)
+func init() {
+	commandHandlers = map[string]func([]string){
+		"echo": echo,
+		"exit": exit,
+		"type": checkType,
+	}
+}
+
+func exit(commands []string) {
+	if len(commands) == 1 {
+		os.Exit(0)
+	}
+	if len(commands) > 2 {
+		fmt.Fprintln(os.Stdout, "exit: too many arguments")
+		return
+	}
+	if len(commands) == 2 && commands[1] == "0\n" {
+		os.Exit(0)
+	}
+}
+
+func echo(commands []string) {
+	if len(commands) >= 1 {
+		fmt.Fprint(os.Stdout, strings.Join(commands[1:], " "))
+		return
+	}
+}
+
+func checkType(commands []string) {
+	command := strings.TrimSpace(commands[1])
+	_, ok := commandHandlers[command]
+	if ok {
+		fmt.Fprintln(os.Stdout, fmt.Sprint(command, " is a shell builtin"))
+		return
+	}
+	fmt.Fprintln(os.Stdout, strings.TrimRight(strings.Join(commands[1:], ""), "\n")+": not found")
+}
 
 func main() {
-	handlers := map[string]CommandHandler{
-		"exit": handleExit,
-		"echo": handleEcho,
-	}
-
-	// REPL
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
-		line, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+		input, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error reading input:", err)
+			os.Exit(1)
+		}
 
-		if line == "" {
+		commands := strings.Split(input, " ")
+		handler, ok := commandHandlers[commands[0]]
+		if !ok {
+			fmt.Fprintln(os.Stdout, input[:len(input)-1]+": command not found")
 			continue
 		}
-
-		parts := strings.Fields(line)
-		cmd := parts[0]
-		args := parts[1:]
-
-		if handler, ok := handlers[cmd]; ok {
-			if handler(args) {
-				break
-			}
-		} else {
-			fmt.Printf("%s: command not found\n", cmd)
-		}
+		handler(commands)
 	}
 }
