@@ -1,23 +1,18 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
-func handleExit(command string) bool {
-	parts := strings.Fields(command)
-
-	if len(parts) != 2 {
-		return false
-	}
-
-	statusCode := parts[1]
-
-	if parts[0] != "exit" {
-		return false
-	}
-
-	if statusCode == "0" {
+func handleExit(args []string) bool {
+	if len(args) > 0 && args[0] == "0" {
 		return true
 	}
+	return false
+}
 
+func handleEcho(args []string) bool {
+	fmt.Println(strings.Join(args, " "))
 	return false
 }

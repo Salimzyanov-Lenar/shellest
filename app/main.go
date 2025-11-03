@@ -11,17 +11,33 @@ import (
 var _ = fmt.Fprint
 var _ = os.Stdout
 
+type CommandHandler func(args []string) (exit bool)
+
 func main() {
+	handlers := map[string]CommandHandler{
+		"exit": handleExit,
+		"echo": handleEcho,
+	}
+
 	// REPL
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
-		command, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+		line, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 
-		if handleExit(command) {
-			break
+		if line == "" {
+			continue
 		}
 
-		command = strings.TrimSpace(command)
-		fmt.Printf("%s: command not found\n", command)
+		parts := strings.Fields(line)
+		cmd := parts[0]
+		args := parts[1:]
+
+		if handler, ok := handlers[cmd]; ok {
+			if handler(args) {
+				break
+			}
+		} else {
+			fmt.Printf("%s: command not found\n", cmd)
+		}
 	}
 }
