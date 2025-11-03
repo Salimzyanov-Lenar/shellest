@@ -42,21 +42,28 @@ func echo(commands []string) {
 
 func checkPathInSystem(commands []string) bool {
 	// Type handler for check program in system
-	paths := strings.Split(os.Getenv("PATH"), ":")
+	paths := os.Getenv("PATH")
 
-	for i, j := 0, len(paths)-1; i < j; i, j = i+1, j-1 {
-		paths[i], paths[j] = paths[j], paths[i]
-	}
+	command := strings.TrimSuffix(commands[1], "\n")
 
-	for _, path := range paths {
-		filePath := filepath.Join(path, strings.TrimSpace(commands[1]))
-		if _, err := os.Stat(filePath); err == nil {
-			command := strings.TrimSuffix(commands[1], "\n")
-			fmt.Fprintf(os.Stdout, "%s is %s\n", command, filePath)
+	for _, path := range strings.Split(paths, ":") {
+		file := filepath.Join(path, command)
+		if _, err := os.Stat(file); err == nil {
+			fmt.Fprintf(os.Stdout, "%s is %s\n", command, file)
 			return true
 		}
 	}
 	return false
+
+	// for _, path := range paths {
+	// 	filePath := filepath.Join(path, strings.TrimSpace(commands[1]))
+	// 	if _, err := os.Stat(filePath); err == nil {
+	// 		command := strings.TrimSuffix(commands[1], "\n")
+	// 		fmt.Fprintf(os.Stdout, "%s is %s\n", command, filePath)
+	// 		return true
+	// 	}
+	// }
+	// return false
 }
 
 func checkType(commands []string) {
