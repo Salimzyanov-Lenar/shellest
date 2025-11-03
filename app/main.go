@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -18,6 +19,7 @@ func init() {
 }
 
 func exit(commands []string) {
+	// Exit handler
 	if len(commands) == 1 {
 		os.Exit(0)
 	}
@@ -31,20 +33,39 @@ func exit(commands []string) {
 }
 
 func echo(commands []string) {
+	// Echo handler
 	if len(commands) >= 1 {
 		fmt.Fprint(os.Stdout, strings.Join(commands[1:], " "))
 		return
 	}
 }
 
+func checkPathInSystem(commands []string) bool {
+	// Type handler for check program in system
+	paths := strings.Split(os.Getenv("PATH"), ":")
+
+	for _, path := range paths {
+		filePath := filepath.Join(path, strings.TrimSpace(commands[1]))
+		if _, err := os.Stat(filePath); err == nil {
+			command := strings.TrimSuffix(commands[1], "\n")
+			fmt.Fprintf(os.Stdout, "%s is %s\n", command, filePath)
+			return true
+		}
+	}
+	return false
+}
+
 func checkType(commands []string) {
+	// Type handler
 	command := strings.TrimSpace(commands[1])
 	_, ok := commandHandlers[command]
 	if ok {
 		fmt.Fprintln(os.Stdout, fmt.Sprint(command, " is a shell builtin"))
 		return
 	}
-	fmt.Fprintln(os.Stdout, strings.TrimRight(strings.Join(commands[1:], ""), "\n")+": not found")
+	if !checkPathInSystem(commands) {
+		fmt.Fprintln(os.Stdout, strings.TrimRight(strings.Join(commands[1:], ""), "\n")+": not found")
+	}
 }
 
 func main() {
