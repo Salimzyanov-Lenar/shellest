@@ -44,7 +44,7 @@ func checkPathInSystem(commands []string) bool {
 	// Type handler for check program in system
 	paths := os.Getenv("PATH")
 
-	command := strings.TrimSuffix(commands[1], "\n")
+	command := strings.TrimSpace(commands[1])
 
 	for _, path := range strings.Split(paths, ":") {
 		file := filepath.Join(path, command)
@@ -54,16 +54,6 @@ func checkPathInSystem(commands []string) bool {
 		}
 	}
 	return false
-
-	// for _, path := range paths {
-	// 	filePath := filepath.Join(path, strings.TrimSpace(commands[1]))
-	// 	if _, err := os.Stat(filePath); err == nil {
-	// 		command := strings.TrimSuffix(commands[1], "\n")
-	// 		fmt.Fprintf(os.Stdout, "%s is %s\n", command, filePath)
-	// 		return true
-	// 	}
-	// }
-	// return false
 }
 
 func checkType(commands []string) {
