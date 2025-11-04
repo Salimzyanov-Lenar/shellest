@@ -31,7 +31,7 @@ func main() {
 
 		// Output
 		commands := strings.Split(input, " ")
-		handler, ok := commandHandlers[commands[0]]
+		handler, ok := commandHandlers[strings.TrimSpace(commands[0])]
 
 		if ok {
 			handler(commands) // Builtin handler

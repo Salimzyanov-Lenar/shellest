@@ -59,7 +59,15 @@ func typeHandler(commands []string) {
 }
 
 func pwdHandler(commands []string) {
-
+	// Case: pwd -> /some/path/to/current/dir
+	if len(commands) > 1 && commands[0] != "pwd" {
+		return
+	}
+	path, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s", err)
+	}
+	fmt.Println(path)
 }
 
 func anotherProgramHandler(commands []string) bool {
