@@ -30,8 +30,13 @@ func main() {
 			os.Exit(1)
 		}
 
+		// if strings.TrimSpace(input) == "" {
+		// 	continue
+		// }
+
+		commands := splitWithQuotes(strings.TrimRight(input, "\n"))
 		// Output
-		commands := strings.Split(input, " ")
+		// commands := strings.Split(input, " ")
 		handler, ok := commandHandlers[strings.TrimSpace(commands[0])]
 
 		if ok {
@@ -43,4 +48,27 @@ func main() {
 			continue
 		}
 	}
+}
+
+func splitWithQuotes(s string) []string {
+	var result []string
+	var current string
+	inQuote := false
+
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\'' {
+			inQuote = !inQuote
+		} else if s[i] == ' ' && !inQuote {
+			if current != "" {
+				result = append(result, current)
+				current = ""
+			}
+		} else {
+			current += string(s[i])
+		}
+	}
+	if current != "" {
+		result = append(result, current)
+	}
+	return result
 }

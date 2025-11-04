@@ -15,7 +15,7 @@ func exitHandler(commands []string) {
 		fmt.Fprintln(os.Stdout, "exit: too many arguments")
 		return
 	}
-	if len(commands) == 2 && commands[1] == "0\n" {
+	if len(commands) == 2 && commands[1] == "0" {
 		os.Exit(0)
 	}
 }
@@ -25,7 +25,7 @@ func echoHandler(commands []string) {
 	// $ echo hello world
 	// hello world
 	if len(commands) >= 1 {
-		fmt.Fprint(os.Stdout, strings.Join(commands[1:], " "))
+		fmt.Fprintln(os.Stdout, strings.Join(commands[1:], " "))
 		return
 	}
 }
