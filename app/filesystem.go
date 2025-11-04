@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func checkPathInSystem(command string) (bool, string) {
+func checkFileExistsInSystem(command string) (bool, string) {
 	// Case: ./program /another_program
 	if strings.Contains(command, "/") {
 		info, err := os.Stat(command)

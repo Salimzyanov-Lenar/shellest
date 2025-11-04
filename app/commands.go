@@ -50,7 +50,7 @@ func typeHandler(commands []string) {
 	}
 
 	// Case: try to find command in PATH dirs
-	exists, filePath := checkPathInSystem(cmdName)
+	exists, filePath := checkFileExistsInSystem(cmdName)
 	if exists {
 		fmt.Fprintf(os.Stdout, "%s is %s\n", cmdName, filePath)
 	} else {
@@ -58,10 +58,14 @@ func typeHandler(commands []string) {
 	}
 }
 
+func pwdHandler(commands []string) {
+
+}
+
 func anotherProgramHandler(commands []string) bool {
 	// Case: when program isn't builtin
 	command := strings.TrimSpace(commands[0])
-	exists, filePath := checkPathInSystem(command)
+	exists, filePath := checkFileExistsInSystem(command)
 	args := []string{}
 
 	if len(commands) >= 2 {

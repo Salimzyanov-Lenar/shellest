@@ -15,6 +15,7 @@ func init() {
 		"echo": echoHandler,
 		"exit": exitHandler,
 		"type": typeHandler,
+		"pwd":  pwdHandler,
 	}
 }
 
