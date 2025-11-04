@@ -4,115 +4,18 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
 var commandHandlers map[string]func([]string)
 
+// Initialize with built in function
 func init() {
 	commandHandlers = map[string]func([]string){
-		"echo": echo,
-		"exit": exit,
-		"type": checkType,
+		"echo": echoHandler,
+		"exit": exitHandler,
+		"type": typeHandler,
 	}
-}
-
-func exit(commands []string) {
-	// Exit handler
-	if len(commands) == 1 {
-		os.Exit(0)
-	}
-	if len(commands) > 2 {
-		fmt.Fprintln(os.Stdout, "exit: too many arguments")
-		return
-	}
-	if len(commands) == 2 && commands[1] == "0\n" {
-		os.Exit(0)
-	}
-}
-
-func echo(commands []string) {
-	// Echo handler
-	if len(commands) >= 1 {
-		fmt.Fprint(os.Stdout, strings.Join(commands[1:], " "))
-		return
-	}
-}
-
-func checkPathInSystem(command string) (bool, string) {
-	// Если путь уже абсолютный или относительный — проверяем напрямую
-	if strings.Contains(command, "/") {
-		info, err := os.Stat(command)
-		if err == nil && !info.IsDir() && info.Mode().Perm()&0111 != 0 {
-			return true, command
-		}
-		return false, ""
-	}
-
-	// Проходимся по директориям PATH в порядке
-	for _, dir := range strings.Split(os.Getenv("PATH"), ":") {
-		fullPath := filepath.Join(dir, command)
-		info, err := os.Stat(fullPath)
-		if err == nil && !info.IsDir() && info.Mode().Perm()&0111 != 0 {
-			return true, fullPath
-		}
-	}
-
-	return false, ""
-}
-
-func checkType(commands []string) {
-	if len(commands) < 2 {
-		fmt.Fprintln(os.Stderr, "type: missing argument")
-		return
-	}
-
-	cmdName := strings.TrimSpace(commands[1])
-
-	// Проверяем, является ли builtin'ом
-	if _, ok := commandHandlers[cmdName]; ok {
-		fmt.Fprintf(os.Stdout, "%s is a shell builtin\n", cmdName)
-		return
-	}
-
-	// Проверяем, есть ли программа в PATH
-	exists, filePath := checkPathInSystem(cmdName)
-	if exists {
-		fmt.Fprintf(os.Stdout, "%s is %s\n", cmdName, filePath)
-	} else {
-		fmt.Fprintf(os.Stdout, "%s: not found\n", cmdName)
-	}
-}
-
-func runExternal(path string, command string, args []string) {
-	cmd := exec.Command(path, args...)
-	cmd.Args = append([]string{command}, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-}
-
-func anotherProgramHandler(commands []string) bool {
-	// Parse program name and try find it
-	// 		Ex: python3 -> true, /usr/bin/python3
-	command := strings.TrimSpace(commands[0])
-	exists, filePath := checkPathInSystem(command)
-	args := []string{}
-	if len(commands) >= 2 {
-		args = commands[1:]
-		args[len(args)-1] = strings.TrimSpace(args[len(args)-1])
-	}
-	if exists {
-		runExternal(filePath, command, args)
-		return true
-	}
-	return false
 }
 
 func main() {
@@ -129,14 +32,11 @@ func main() {
 		commands := strings.Split(input, " ")
 		handler, ok := commandHandlers[commands[0]]
 
-		// Builtin handler
 		if ok {
-			handler(commands)
-			// Try to run program in system
-		} else if anotherProgramHandler(commands) {
+			handler(commands) // Builtin handler
+		} else if anotherProgramHandler(commands) { // Try to run program in system
 			continue
-			// Program not found
-		} else {
+		} else { // Program not found
 			fmt.Fprintln(os.Stdout, input[:len(input)-1]+": command not found")
 			continue
 		}
