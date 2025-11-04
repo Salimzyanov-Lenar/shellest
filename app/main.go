@@ -42,15 +42,24 @@ func echo(commands []string) {
 }
 
 func checkPathInSystem(command string) (bool, string) {
-	// Type handler for check program in system
-	paths := os.Getenv("PATH")
+	// Если путь уже абсолютный или относительный — проверяем напрямую
+	if strings.Contains(command, "/") {
+		info, err := os.Stat(command)
+		if err == nil && !info.IsDir() && info.Mode().Perm()&0111 != 0 {
+			return true, command
+		}
+		return false, ""
+	}
 
-	for _, path := range strings.Split(paths, ":") {
-		file := filepath.Join(path, command)
-		if _, err := os.Stat(file); err == nil {
-			return true, file
+	// Проходимся по директориям PATH в порядке
+	for _, dir := range strings.Split(os.Getenv("PATH"), ":") {
+		fullPath := filepath.Join(dir, command)
+		info, err := os.Stat(fullPath)
+		if err == nil && !info.IsDir() && info.Mode().Perm()&0111 != 0 {
+			return true, fullPath
 		}
 	}
+
 	return false, ""
 }
 
