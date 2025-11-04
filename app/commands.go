@@ -70,6 +70,24 @@ func pwdHandler(commands []string) {
 	fmt.Println(path)
 }
 
+func cdHandler(commands []string) {
+	cmd := strings.TrimSpace(commands[0])
+	if cmd != "cd" {
+		return
+	}
+
+	if len(commands) < 2 {
+		fmt.Println("cd: missing argument")
+		return
+	}
+
+	absolutePath := strings.TrimSpace(commands[1])
+	err := os.Chdir(absolutePath)
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", absolutePath)
+	}
+}
+
 func anotherProgramHandler(commands []string) bool {
 	// Case: when program isn't builtin
 	command := strings.TrimSpace(commands[0])

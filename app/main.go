@@ -16,6 +16,7 @@ func init() {
 		"exit": exitHandler,
 		"type": typeHandler,
 		"pwd":  pwdHandler,
+		"cd":   cdHandler,
 	}
 }
 
