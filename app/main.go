@@ -55,19 +55,26 @@ func checkPathInSystem(command string) (bool, string) {
 }
 
 func checkType(commands []string) {
-	// Type handler
-	command := strings.TrimSpace(commands[1])
-	_, ok := commandHandlers[command]
-	if ok {
-		fmt.Fprintln(os.Stdout, fmt.Sprint(command, " is a shell builtin"))
+	if len(commands) < 2 {
+		fmt.Fprintln(os.Stderr, "type: missing argument")
 		return
 	}
-	command = strings.TrimSpace(commands[1])
-	exists, filePath := checkPathInSystem(command)
-	if !exists {
-		fmt.Fprintln(os.Stdout, strings.TrimRight(strings.Join(commands[1:], ""), "\n")+": not found")
+
+	cmdName := strings.TrimSpace(commands[1])
+
+	// Проверяем, является ли builtin'ом
+	if _, ok := commandHandlers[cmdName]; ok {
+		fmt.Fprintf(os.Stdout, "%s is a shell builtin\n", cmdName)
+		return
 	}
-	fmt.Fprintf(os.Stdout, "%s is %s\n", command, filePath)
+
+	// Проверяем, есть ли программа в PATH
+	exists, filePath := checkPathInSystem(cmdName)
+	if exists {
+		fmt.Fprintf(os.Stdout, "%s is %s\n", cmdName, filePath)
+	} else {
+		fmt.Fprintf(os.Stdout, "%s: not found\n", cmdName)
+	}
 }
 
 func runExternal(path string, command string, args []string) {
