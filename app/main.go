@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
 var commandHandlers map[string]func([]string)
@@ -34,7 +35,7 @@ func main() {
 		// 	continue
 		// }
 
-		commands := splitWithQuotes(strings.TrimRight(input, "\n"))
+		commands := parseInput(input)
 		// Output
 		// commands := strings.Split(input, " ")
 		handler, ok := commandHandlers[strings.TrimSpace(commands[0])]
@@ -50,25 +51,59 @@ func main() {
 	}
 }
 
-func splitWithQuotes(s string) []string {
-	var result []string
-	var current string
-	inQuote := false
+// func splitWithQuotes(s string) []string {
+// 	var result []string
+// 	var current string
+// 	inQuote := false
 
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\'' {
-			inQuote = !inQuote
-		} else if s[i] == ' ' && !inQuote {
-			if current != "" {
-				result = append(result, current)
-				current = ""
+// 	for i := 0; i < len(s); i++ {
+// 		if s[i] == '\'' {
+// 			inQuote = !inQuote
+// 		} else if s[i] == ' ' && !inQuote {
+// 			if current != "" {
+// 				result = append(result, current)
+// 				current = ""
+// 			}
+// 		} else {
+// 			current += string(s[i])
+// 		}
+// 	}
+// 	if current != "" {
+// 		result = append(result, current)
+// 	}
+// 	return result
+// }
+
+func parseInput(input string) []string {
+	var parts []string
+	var currentPart strings.Builder
+	var quoteChar rune = 0
+
+	input = strings.TrimSuffix(input, "\n")
+
+	for _, r := range input {
+		switch {
+		case quoteChar != 0:
+			if r == quoteChar {
+				quoteChar = 0
+			} else {
+				currentPart.WriteRune(r)
 			}
-		} else {
-			current += string(s[i])
+		case r == '\'' || r == '"':
+			quoteChar = r
+
+		case unicode.IsSpace(r):
+			if currentPart.Len() > 0 {
+				parts = append(parts, currentPart.String())
+				currentPart.Reset()
+			}
+		default:
+			currentPart.WriteRune(r)
 		}
 	}
-	if current != "" {
-		result = append(result, current)
+
+	if currentPart.Len() > 0 {
+		parts = append(parts, currentPart.String())
 	}
-	return result
+	return parts
 }
