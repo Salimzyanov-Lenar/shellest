@@ -55,6 +55,9 @@ func runExternalRedirected(path string, command string, redirectIndex int, args 
 	cmd.Stderr = file
 
 	if err := cmd.Run(); err != nil {
+		if _, ok := err.(*exec.ExitError); ok {
+			return
+		}
 		fmt.Fprintln(os.Stderr, err)
 	}
 }
