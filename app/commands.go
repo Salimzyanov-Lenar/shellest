@@ -6,61 +6,63 @@ import (
 	"strings"
 )
 
+// Package for commands
+// - include builtin handlers and external
+// - actually execution of every program happen in executor.go
+
+// Case: exit <status_code> -> exit from terminal
 func exitHandler(commands []string) {
-	// Exit handler
-	if len(commands) == 1 {
+	switch len(commands) {
+	case 1:
 		os.Exit(0)
-	}
-	if len(commands) > 2 {
-		fmt.Fprintln(os.Stdout, "exit: too many arguments")
-		return
-	}
-	if len(commands) == 2 && commands[1] == "0" {
-		os.Exit(0)
+	case 2:
+		if commands[1] == "0" {
+			os.Exit(0)
+		}
+	default:
+		fmt.Fprintln(os.Stderr, "exit: too many arguments")
 	}
 }
 
+// Case: echo <some_text> -> print <some_text> in terminal
 func echoHandler(commands []string) {
-	// Case:
-	// $ echo hello world
-	// hello world
-	if len(commands) >= 1 {
-		fmt.Fprintln(os.Stdout, strings.Join(commands[1:], " "))
-		return
-	}
+	runBuiltIn(commands, func(cmds []string) {
+		if len(cmds) >= 1 {
+			fmt.Fprintln(os.Stdout, strings.Join(cmds[1:], " "))
+		}
+	})
 }
 
+// Case: type <program_name> -> show path or say that builtin
 func typeHandler(commands []string) {
-	// Case:
-	// $ type echo
-	// echo is a shell builtin
-	// $ type ls
-	// ls is /some/path/ls
 	if len(commands) < 2 {
 		fmt.Fprintln(os.Stderr, "type: missing argument")
 		return
 	}
 
 	cmdName := strings.TrimSpace(commands[1])
-
-	// Case: command is builtin
-	if _, ok := commandHandlers[cmdName]; ok {
-		fmt.Fprintf(os.Stdout, "%s is a shell builtin\n", cmdName)
-		return
-	}
-
-	// Case: try to find command in PATH dirs
-	exists, filePath := checkFileExistsInSystem(cmdName)
-	if exists {
-		fmt.Fprintf(os.Stdout, "%s is %s\n", cmdName, filePath)
-	} else {
-		fmt.Fprintf(os.Stdout, "%s: not found\n", cmdName)
-	}
+	runBuiltIn(commands, func(cmds []string) {
+		if len(cmds) >= 1 {
+			// find in builtin's
+			if _, ok := commandHandlers[cmdName]; ok {
+				fmt.Fprintf(os.Stdout, "%s is a shell builtin\n", cmdName)
+				return
+			}
+			// find external
+			exists, filePath := checkFileExistsInSystem(cmdName)
+			if exists {
+				fmt.Fprintf(os.Stdout, "%s in %s\n", cmdName, filePath)
+			} else {
+				fmt.Fprintf(os.Stdout, "%s: not found\n", cmdName)
+			}
+			return
+		}
+	})
 }
 
+// Case: pwd -> /some/path/to/current/dir
 func pwdHandler(commands []string) {
-	// Case: pwd -> /some/path/to/current/dir
-	if len(commands) > 1 && commands[0] != "pwd" {
+	if len(commands) > 1 {
 		return
 	}
 	path, err := os.Getwd()
@@ -70,14 +72,10 @@ func pwdHandler(commands []string) {
 	fmt.Println(path)
 }
 
+// Case: cd <path> -> change current dir to <path>
 func cdHandler(commands []string) {
-	cmd := strings.TrimSpace(commands[0])
-	if cmd != "cd" {
-		return
-	}
-
 	if len(commands) < 2 {
-		fmt.Println("cd: missing argument")
+		fmt.Fprintln(os.Stderr, "cd: missing argument")
 		return
 	}
 
@@ -90,24 +88,34 @@ func cdHandler(commands []string) {
 	absolutePath := strings.TrimSpace(commands[1])
 	err := os.Chdir(absolutePath)
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", absolutePath)
+		fmt.Fprintf(os.Stderr, "cd: %s: No such file or directory\n", absolutePath)
 	}
 }
 
-func anotherProgramHandler(commands []string) bool {
-	// Case: when program isn't builtin
+// Case: program not builtin, find it in PATH dirs
+func externalProgramHandler(commands []string) bool {
 	command := strings.TrimSpace(commands[0])
-	exists, filePath := checkFileExistsInSystem(command)
-	args := []string{}
+	program_exists, filePath := checkFileExistsInSystem(command)
 
-	if len(commands) >= 2 {
+	redirectIndex, redirect_exists := findRedirectOutputIndex(commands)
+
+	args := []string{}
+	if len(commands) > 1 {
 		args = commands[1:]
-		args[len(args)-1] = strings.TrimSpace(args[len(args)-1])
 	}
 
-	if exists {
-		runExternal(filePath, command, args)
+	if program_exists {
+		if redirect_exists {
+			runExternalRedirected(filePath, command, redirectIndex, args)
+		} else {
+			runExternal(filePath, command, args)
+		}
 		return true
 	}
+
 	return false
+}
+
+func shellestHandler(commands []string) bool {
+	commands :=
 }

@@ -13,11 +13,12 @@ var commandHandlers map[string]func([]string)
 // Initialize with built in function
 func init() {
 	commandHandlers = map[string]func([]string){
-		"echo": echoHandler,
-		"exit": exitHandler,
-		"type": typeHandler,
-		"pwd":  pwdHandler,
-		"cd":   cdHandler,
+		"echo":     echoHandler,
+		"exit":     exitHandler,
+		"type":     typeHandler,
+		"pwd":      pwdHandler,
+		"cd":       cdHandler,
+		"shellest": shellestHandler,
 	}
 }
 
@@ -38,7 +39,7 @@ func main() {
 		// Output
 		if ok {
 			handler(commands) // Builtin handler
-		} else if anotherProgramHandler(commands) { // Try to run program in system
+		} else if externalProgramHandler(commands) { // Try to run program in system
 			continue
 		} else { // Program not found
 			fmt.Fprintln(os.Stdout, input[:len(input)-1]+": command not found")

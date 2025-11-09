@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// Package for working with filesystem
+// - Check if file exists in system
+
 func checkFileExistsInSystem(command string) (bool, string) {
 	// Case: ./program /another_program
 	if strings.Contains(command, "/") {
