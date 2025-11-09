@@ -12,15 +12,15 @@ import (
 
 // Case: exit <status_code> -> exit from terminal
 func exitHandler(commands []string) {
-	switch len(commands) {
-	case 1:
+	if len(commands) == 1 {
 		os.Exit(0)
-	case 2:
-		if commands[1] == "0" {
-			os.Exit(0)
-		}
-	default:
+	}
+	if len(commands) > 2 {
 		fmt.Fprintln(os.Stderr, "exit: too many arguments")
+		return
+	}
+	if len(commands) == 2 && commands[1] == "0" {
+		os.Exit(0)
 	}
 }
 
@@ -115,7 +115,3 @@ func externalProgramHandler(commands []string) bool {
 
 	return false
 }
-
-// func shellestHandler(commands []string) bool {
-// 	commands :=
-// }
