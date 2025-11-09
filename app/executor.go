@@ -38,7 +38,7 @@ func runExternalRedirected(path string, command string, redirectIndex int, redir
 		return
 	}
 
-	cmdArgs := args[:redirectIndex]
+	// cmdArgs := args[:redirectIndex-1]
 	filename := args[redirectIndex]
 
 	file, err := os.Create(filename)
@@ -48,8 +48,9 @@ func runExternalRedirected(path string, command string, redirectIndex int, redir
 	}
 	defer file.Close()
 
+	cmdArgs := args[:redirectIndex]
 	cmd := exec.Command(path, cmdArgs...)
-	cmd.Args = append([]string{command}, cmdArgs...)
+	// cmd.Args = append([]string{command}, cmdArgs...)
 	cmd.Stdin = os.Stdin
 
 	if redirectType == RedirectStdout {
