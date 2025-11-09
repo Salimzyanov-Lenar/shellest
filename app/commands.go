@@ -51,7 +51,7 @@ func typeHandler(commands []string) {
 			// find external
 			exists, filePath := checkFileExistsInSystem(cmdName)
 			if exists {
-				fmt.Fprintf(os.Stdout, "%s in %s\n", cmdName, filePath)
+				fmt.Fprintf(os.Stdout, "%s is %s\n", cmdName, filePath)
 			} else {
 				fmt.Fprintf(os.Stdout, "%s: not found\n", cmdName)
 			}
