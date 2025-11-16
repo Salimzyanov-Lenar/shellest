@@ -6,10 +6,6 @@ import (
 	"strings"
 )
 
-// Package for commands
-// - include builtin handlers and external
-// - actually execution of every program happen in executor.go
-
 // Case: exit <status_code> -> exit from terminal
 func exitHandler(commands []string) {
 	if len(commands) == 1 {
