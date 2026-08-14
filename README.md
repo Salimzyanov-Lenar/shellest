@@ -1,1 +1,1 @@
-Simple shell written in Go
+Simple Unix shell written in Go
